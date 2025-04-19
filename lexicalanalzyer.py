@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 KEYWORDS = {"int", "float", "if", "else", "while", "return", "void", "main"}
 OPERATORS = {"+", "-", "*", "/", "=", "==", "!=", "<", ">", "<=", ">="}
@@ -15,22 +15,27 @@ def classify_token(token):
 
 def lexical_analyzer(code):
     tokens = re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*|\d+|[+\-*/=<>!]=?|[;{},()\[\]]', code)
+    categories = [classify_token(token) for token in tokens]
     lexeme_dict = defaultdict(set)
-    for token in tokens:
-        lexeme_dict[classify_token(token)].add(token)
-    return lexeme_dict
+    for token, category in zip(tokens, categories):
+        lexeme_dict[category].add(token)
+    return lexeme_dict, Counter(categories)
 
-def print_lexeme_table(lexeme_dict):
-    print(f"{'Lexeme':<20} {'Tokens':<50}")
-    print("_" * 70)
+def print_lexeme_table(lexeme_dict, count_dict):
+    print(f"{'Lexeme':<30} {'Tokens':<50} {'Count':<10}")
+    print("_" * 90)
     for category, tokens in lexeme_dict.items():
-        print(f"{category:<20} {', '.join(sorted(tokens)):<50}")
+        print(f"{category:<30} {', '.join(sorted(tokens)):<50} {count_dict[category]:<10}")
 
 sample_code = """
 int main() {
-    if (a > b) a = 5; else b = 5;
+    if (a > b)
+        a = 5;
+    else
+        b = 5;
 }
 """
-print_lexeme_table(lexical_analyzer(sample_code))
+lexeme_dict, count_dict = lexical_analyzer(sample_code)
+print_lexeme_table(lexeme_dict, count_dict)
 
 
